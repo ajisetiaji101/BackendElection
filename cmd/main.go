@@ -34,6 +34,8 @@ func main() {
 	switch os.Args[1] {
 	case "migrate":
 		migrate(db.Conn)
+	case "reset":
+		resetDatabase(db.Conn)
 	default:
 		fmt.Println("Unknown command. Available commands: migrate")
 	}
@@ -47,4 +49,22 @@ func migrate(db *sql.DB) {
 		fmt.Println("Migrated database successfully")
 	}
 	fmt.Println("Finish migration...")
+}
+
+func resetDatabase(db *sql.DB) {
+	fmt.Println("Starting database reset...")
+	queries := []string{
+		"DROP SCHEMA public CASCADE;", // Menghapus semua tabel
+		"CREATE SCHEMA public;",       // Membuat ulang schema default
+		"GRANT ALL ON SCHEMA public TO public;",
+	}
+
+	for _, query := range queries {
+		if _, err := db.Exec(query); err != nil {
+			fmt.Println("Error resetting database:", err)
+			return
+		}
+	}
+
+	fmt.Println("Database reset successfully")
 }

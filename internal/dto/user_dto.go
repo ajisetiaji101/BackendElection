@@ -114,3 +114,15 @@ func (u *UserResponse) ListFromEntity(users []model.User) []UserResponse {
 	}
 	return list
 }
+
+type UserLoginRequest struct {
+	NIK string `json:"nik"`
+}
+
+func (u *UserLoginRequest) Validate() error {
+	if len(u.NIK) == 0 {
+		return errors.New("nik is required")
+	}
+
+	return nil
+}

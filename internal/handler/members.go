@@ -21,6 +21,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/bytedance/sonic"
 	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
 )
@@ -110,6 +111,8 @@ func (h *Pemilihs) GetByPemilihId(w http.ResponseWriter, r *http.Request, ps htt
 	result := extraction.DetectionResult(m)
 	d, _ := json.Marshal(result)
 
+	log.Printf("Minutiaes awal: %s", d)
+
 	var signature []model.MatchingSignature
 	var pemilihRepo = repository.PemilihRepository{Log: h.Log, Db: h.DB}
 	pemilihList, err := pemilihRepo.FindAll(ctx)
@@ -121,7 +124,7 @@ func (h *Pemilihs) GetByPemilihId(w http.ResponseWriter, r *http.Request, ps htt
 	// Process each pemilih record to generate matching signatures.
 	for _, pemilih := range pemilihList {
 
-		log.Printf("Processing pemilih: %s", pemilih.PemilihID)
+		log.Printf("Processing pemilih: %s", pemilih.Nama)
 
 		var r1, r2 types.DetectionResult
 		json.Unmarshal([]byte(d), &r1)
@@ -131,14 +134,17 @@ func (h *Pemilihs) GetByPemilihId(w http.ResponseWriter, r *http.Request, ps htt
 			max = len(r2.Minutia)
 		}
 		matches := matching.Match(r1, r2)
-		d3, _ := json.Marshal(matches)
+		// d3, _ := json.Marshal(matches)
 
 		resultMatch := len(matches)
 
 		log.Printf("matched minutiaes: %d/%d", len(matches), max)
-		log.Printf("matches: %s", d3)
+		// log.Printf("matches: %s", d3)
 
 		if resultMatch != 0 {
+
+			// log.Printf("Pemilih id sidik : %s", pemilih.SidikJari)
+
 			signature = append(signature, model.MatchingSignature{
 				CodeID: pemilih.PemilihID,
 				Nilai:  resultMatch,
@@ -169,7 +175,7 @@ func (h *Pemilihs) GetByPemilihId(w http.ResponseWriter, r *http.Request, ps htt
 
 	httpres := httpresponse.Response{Cache: h.Cache}
 
-	key := fmt.Sprintf("users.%d")
+	key := fmt.Sprintf("pemilih.%s", maxSignature.CodeID)
 	if cacheValue, isExist := h.Cache.Get(ctx, key); isExist {
 		httpres.Set(w, http.StatusOK, cacheValue)
 		return
@@ -179,10 +185,125 @@ func (h *Pemilihs) GetByPemilihId(w http.ResponseWriter, r *http.Request, ps htt
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	} else {
-		fmt.Printf("Found matching signature with CodeId: %s and Nilai: %v\n", maxSignature.CodeID, pemilihRepoOne) // Assuming Nilai is a field in the Pemilih struct
+		// fmt.Printf("Found matching signature with CodeId: %s and Nilai: %v\n", maxSignature.CodeID, pemilihRepoOne) // Assuming Nilai is a field in the Pemilih struct
 	}
 
 	var response dto.PemilihResponse
 	response.FromEntity(pemilihRepoOne.PemilihEntity)
 	httpres.SetMarshal(ctx, w, http.StatusOK, response, key)
+}
+
+// @Security Bearer
+// @Summary Get Pemilih by NIK
+// @Description Get Pemilih by NIK
+// @Tags Pemilih
+// @Accept  json
+// @Produce  json
+// @Param Authorization header string true "
+// @Param nik query string true "NIK"
+// @Success 200 {object} dto.PemilihResponse
+// @Router /pemilihByNik [post]
+func (h *Pemilihs) GetByPemilihByNik(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+
+	var ctx = r.Context()
+
+	switch ctx.Err() {
+	case context.Canceled:
+		h.Log.Error(context.Canceled)
+		http.Error(w, "Request is canceled", http.StatusExpectationFailed)
+		return
+	case context.DeadlineExceeded:
+		h.Log.Error(context.DeadlineExceeded)
+		http.Error(w, "Deadline is exceeded", http.StatusExpectationFailed)
+		return
+	default:
+	}
+
+	///////////////////////////////////////////
+	var loginUserRequest dto.UserLoginRequest
+
+	defer r.Body.Close()
+	err := sonic.ConfigDefault.NewDecoder(r.Body).Decode(&loginUserRequest)
+	if err != nil {
+		h.Log.Error(err)
+		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+		return
+	}
+
+	if err := loginUserRequest.Validate(); err != nil {
+		h.Log.Error(err)
+		http.Error(w, "Invalid input: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var pemilihRepo = repository.PemilihRepository{Log: h.Log, Db: h.DB}
+	pemilihRepo.PemilihEntity = model.Pemilih{NIK: loginUserRequest.NIK}
+	pemilih, err := pemilihRepo.FindByNIK(ctx, loginUserRequest.NIK)
+
+	log.Printf("Searching for pemilih with NIK: %s", loginUserRequest.NIK)
+	log.Printf("Pemilih: %v", pemilih)
+
+	httpres := httpresponse.Response{Cache: h.Cache}
+
+	key := fmt.Sprintf("pemilih.%s", loginUserRequest.NIK)
+	if cacheValue, isExist := h.Cache.Get(ctx, key); isExist {
+		httpres.Set(w, http.StatusOK, cacheValue)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	} else {
+		// fmt.Printf("Found matching signature with CodeId: %s and Nilai: %v\n", maxSignature.CodeID, pemilihRepoOne) // Assuming Nilai is a field in the Pemilih struct
+	}
+
+	var response dto.PemilihResponse
+	response.FromEntity(pemilih)
+	httpres.SetMarshal(ctx, w, http.StatusOK, response, "12")
+}
+
+// @Security Bearer
+// @Summary Get Total Pemilih Persen
+// @Description Get Total Pemilih Persen
+// @Tags Pemilih
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} dto.TotalPemilihPersenResponse
+// @Router /totalpemilihpersen [get]
+func (h *Pemilihs) GetTotalPemilihPersen(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+
+	var ctx = r.Context()
+
+	fmt.Println(ctx)
+
+	switch ctx.Err() {
+	case context.Canceled:
+		h.Log.Error(context.Canceled)
+		http.Error(w, "Request is canceled", http.StatusExpectationFailed)
+		return
+	case context.DeadlineExceeded:
+		h.Log.Error(context.DeadlineExceeded)
+		http.Error(w, "Deadline is exceeded", http.StatusExpectationFailed)
+		return
+	default:
+	}
+
+	var pemilihRepo = repository.PemilihRepository{Log: h.Log, Db: h.DB}
+	total, err := pemilihRepo.GetTotalPemilihPersenByTpsAndVote(ctx)
+
+	httpres := httpresponse.Response{Cache: h.Cache}
+
+	key := "totalpemilihpersen"
+	if cacheValue, isExist := h.Cache.Get(ctx, key); isExist {
+		httpres.Set(w, http.StatusOK, cacheValue)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	httpres.SetMarshal(ctx, w, http.StatusOK, total, key)
 }

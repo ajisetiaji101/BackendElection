@@ -8,4 +8,6 @@ type Pemilih struct {
 	Alamat       string `db:"alamat"`
 	SidikJari    string `db:"sidik_jari"`
 	StatusAktif  bool   `db:"status_aktif"`
+	TPS          string `db:"tps"`
+	HasVote      bool   `db:"has_vote"`
 }

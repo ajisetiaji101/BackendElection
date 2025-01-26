@@ -37,6 +37,9 @@ func ApiRoute(log *logger.Logger, db *database.Database, cache *redis.Cache) *ht
 	pemilihHandler := handler.Pemilihs{Log: log, DB: db.Conn, Cache: cache}
 	userHandler := handler.Users{Log: log, DB: db.Conn, Cache: cache}
 	authHandler := handler.Auths{Log: log, DB: db.Conn}
+	voteHandler := handler.Votes{Log: log, DB: db.Conn, Cache: cache}
+	kandidatHandler := handler.Kandidats{Log: log, DB: db.Conn, Cache: cache}
+	whitelistIpHandler := handler.WhitelistIp{Log: log, DB: db.Conn, Cache: cache}
 
 	router.POST("/login", mid.WrapMiddleware(publicMiddlewares, authHandler.Login))
 	router.GET("/users", mid.WrapMiddleware(privateMiddlewares, userHandler.List))
@@ -46,7 +49,19 @@ func ApiRoute(log *logger.Logger, db *database.Database, cache *redis.Cache) *ht
 	router.DELETE("/users/:id", mid.WrapMiddleware(privateMiddlewares, userHandler.Delete))
 
 	// Pemilih
-	router.POST("/pemilih", mid.WrapMiddleware(privateMiddlewares, pemilihHandler.GetByPemilihId))
+	router.POST("/pemilih", mid.WrapMiddleware(publicMiddlewares, pemilihHandler.GetByPemilihId))
+	router.POST("/pemilihByNik", mid.WrapMiddleware(publicMiddlewares, pemilihHandler.GetByPemilihByNik))
+	router.GET("/totalpemilihpersen", mid.WrapMiddleware(publicMiddlewares, pemilihHandler.GetTotalPemilihPersen))
+
+	// Votes
+	router.POST("/votes", mid.WrapMiddleware(publicMiddlewares, voteHandler.Create))
+	router.GET("/showresult", mid.WrapMiddleware(publicMiddlewares, voteHandler.ShowResult))
+
+	// Kandidat
+	router.GET("/kandidats", mid.WrapMiddleware(publicMiddlewares, kandidatHandler.List))
+
+	// Whitelist IP
+	router.POST("/whitelistip", mid.WrapMiddleware(publicMiddlewares, whitelistIpHandler.Get))
 
 	return router
 }
