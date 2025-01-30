@@ -40,6 +40,7 @@ func ApiRoute(log *logger.Logger, db *database.Database, cache *redis.Cache) *ht
 	voteHandler := handler.Votes{Log: log, DB: db.Conn, Cache: cache}
 	kandidatHandler := handler.Kandidats{Log: log, DB: db.Conn, Cache: cache}
 	whitelistIpHandler := handler.WhitelistIp{Log: log, DB: db.Conn, Cache: cache}
+	timeOpenVoteHandler := handler.TimeOpenVote{Log: log, DB: db.Conn, Cache: cache}
 
 	router.POST("/login", mid.WrapMiddleware(publicMiddlewares, authHandler.Login))
 	router.GET("/users", mid.WrapMiddleware(privateMiddlewares, userHandler.List))
@@ -62,6 +63,9 @@ func ApiRoute(log *logger.Logger, db *database.Database, cache *redis.Cache) *ht
 
 	// Whitelist IP
 	router.POST("/whitelistip", mid.WrapMiddleware(publicMiddlewares, whitelistIpHandler.Get))
+
+	// Time Open Vote
+	router.GET("/timeopenvote", mid.WrapMiddleware(publicMiddlewares, timeOpenVoteHandler.Get))
 
 	return router
 }

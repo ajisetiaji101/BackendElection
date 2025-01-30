@@ -80,7 +80,7 @@ func (h *Votes) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		return
 	}
 
-	dataKandidatPilih := kandidatRepo.KandidatEntity.GubernurName + " & " + kandidatRepo.KandidatEntity.WakilGubernurName
+	dataKandidatPilih := kandidatRepo.KandidatEntity.GubernurName + kandidatRepo.KandidatEntity.WakilGubernurName
 
 	//validasi pemilih
 	var pemilihRepo = repository.PemilihRepository{Log: h.Log, Db: h.DB}
@@ -93,14 +93,6 @@ func (h *Votes) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 	voteReq.CalonID = dataKandidatPilih
 
 	fmt.Printf("Pemilih: %v\n", pemilih.HasVote)
-
-	if pemilih.HasVote {
-
-		fmt.Printf("Pemilih %s sudah melakukan vote", pemilih.PemilihID)
-
-		http.Error(w, "Pemilih sudah melakukan vote", http.StatusConflict)
-		return
-	}
 
 	// Buat VoteRequest
 	requestBody, err := json.Marshal(voteReq)
@@ -116,7 +108,7 @@ func (h *Votes) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 	fmt.Printf("Generated HMAC: %s\n", generatedHmac)
 
 	// Buat request ke server lain
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://localhost:8082/vote", bytes.NewBuffer(requestBody))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, os.Getenv("EXTERNAL_API_URL")+"/vote", bytes.NewBuffer(requestBody))
 
 	fmt.Println("Request to blockchain server : ", req)
 
@@ -151,16 +143,30 @@ func (h *Votes) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		return
 	}
 
-	//save pemilih has vote
-	pemilih.HasVote = true
-	err = pemilihRepo.UpdateVoteUser(ctx, pemilih)
-	if err != nil {
-		http.Error(w, "Failed to update pemilih", http.StatusInternalServerError)
-		return
+	fmt.Println("Response from blockchain server : ", response)
+
+	var httpCode int
+	var responseData string
+
+	if response["status"] == "failed" {
+		httpCode = http.StatusInternalServerError
+		responseData = response["message"].(string)
+	} else {
+
+		//save pemilih has vote
+		pemilih.HasVote = true
+		err = pemilihRepo.UpdateVoteUser(ctx, pemilih)
+		if err != nil {
+			http.Error(w, "Failed to update pemilih", http.StatusInternalServerError)
+			return
+		}
+
+		httpCode = http.StatusCreated
+		responseData = "Vote success"
 	}
 
 	// Set response menggunakan httpres.SetMarshal
-	httpres.SetMarshal(ctx, w, http.StatusCreated, response, "")
+	httpres.SetMarshal(ctx, w, httpCode, responseData, "")
 }
 
 // @Summary Show Result
@@ -195,7 +201,7 @@ func (h *Votes) ShowResult(w http.ResponseWriter, r *http.Request, _ httprouter.
 	fmt.Printf("Generated HMAC: %s\n", generatedHmac)
 
 	// Buat request ke server lain
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "http://localhost:8082/showresult", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, os.Getenv("EXTERNAL_API_URL")+"/showresult", nil)
 
 	fmt.Println("Request to blockchain server : ", req)
 

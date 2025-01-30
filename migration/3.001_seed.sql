@@ -90,3 +90,6 @@ INSERT INTO kandidats (gubernur_name, wakil_gubernur_name, partai, visi, foto,fo
 	'2024-12-10 13:33:31.431',
 	'2024-12-10 13:33:31.431'
 	);
+
+INSERT INTO time_open_vote (date) 
+VALUES ('2025-02-01');
