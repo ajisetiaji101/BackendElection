@@ -62,34 +62,12 @@ INSERT INTO pemilih (nik, nama, tanggal_lahir, alamat, sidik_jari, status_aktif,
 INSERT INTO pemilih (nik, nama, tanggal_lahir, alamat, sidik_jari, status_aktif, created_at, updated_at, kota, provinsi, kecamatan, tps) VALUES('1234567890123486', 'Charles', '1998-06-10', 'Jalan Flamboyan No. 4', '{"frame":{"horizontal":{"Min":{"X":62,"Y":246},"Max":{"X":207,"Y":246}},"vertical":{"Min":{"X":126,"Y":9},"Max":{"X":126,"Y":288}},"diagonal":{"Min":{"X":62,"Y":9},"Max":{"X":207,"Y":288}},"angle":0.08154201809487689},"angle":0,"minutia":[{"x":209,"y":48,"angle":2.087961743864869,"type":1},{"x":210,"y":48,"angle":2.4716464682525414,"type":1},{"x":137,"y":111,"angle":0.9746461056247353,"type":1},{"x":135,"y":113,"angle":0.8313057595526163,"type":1},{"x":136,"y":122,"angle":1.1738825843357295,"type":1},{"x":97,"y":140,"angle":1.5990563162778397,"type":1},{"x":161,"y":148,"angle":1.6504501622869951,"type":1},{"x":89,"y":150,"angle":1.7075178346732627,"type":1},{"x":85,"y":172,"angle":1.6606566635691957,"type":1},{"x":202,"y":211,"angle":1.7246463037780642,"type":1},{"x":115,"y":232,"angle":0.4656619375449007,"type":1},{"x":115,"y":233,"angle":0.5302227385074163,"type":2},{"x":116,"y":233,"angle":0.5431463670502721,"type":1},{"x":117,"y":233,"angle":0.5462935357024783,"type":1},{"x":150,"y":250,"angle":3.108691723765995,"type":1},{"x":159,"y":257,"angle":2.680206180489628,"type":1},{"x":159,"y":264,"angle":2.9336656589810457,"type":1}]}', true, '2024-12-10 13:33:31.431', '2024-12-10 13:33:31.431', 'Jakarta Selatan', 'DKI Jakarta', 'Jagakarsa', '2');
 
 -- seed kandidats
-INSERT INTO kandidats (gubernur_name, wakil_gubernur_name, partai, visi, foto,foto_partai, created_at, updated_at) VALUES(
-	'Anies Baswedan', 
-	'Sandiaga Uno', 
-	'Gerindra', 
-	'Membangun Jakarta yang lebih baik', 
-	'https://cdn.antaranews.com/cache/1200x800/2017/04/20170419antarafoto-konpers-anies-sa.jpg', 
-	'https://gerindra.id/wp-content/uploads/2021/04/Logo-Gerindra.png',
-	'2024-12-10 13:33:31.431', 
-	'2024-12-10 13:33:31.431'
-	),(
-	'Agus Harimurti Yudhoyono',
-	'Sylviana Murni',
-	'Demokrat',
-	'Membangun Jakarta yang lebih baik',
-	'https://asset-2.tstatic.net/tribunnews/foto/images/preview/agus-harimurti-yudhoyono-dan-sylviana-murni_20160923_225229.jpg',
-	'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Logo_of_the_Democratic_Party_%28Indonesia%29.svg/1280px-Logo_of_the_Democratic_Party_%28Indonesia%29.svg.png',
-	'2024-12-10 13:33:31.431',
-	'2024-12-10 13:33:31.431'
-	),(
-	'Ridwan Kamil',
-	'Suswono',
-	'PKS',
-	'Membangun Jakarta yang lebih baik',
-	'https://cdn.antaranews.com/cache/1200x800/2024/08/28/1000187208_1.jpg',
-	'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Logo_PKS.svg/1200px-Logo_PKS.svg.png',
-	'2024-12-10 13:33:31.431',
-	'2024-12-10 13:33:31.431'
-	);
+INSERT INTO kandidats (kandidat_id, gubernur_name, wakil_gubernur_name, partai, visi, foto, foto_partai, created_at, updated_at) VALUES('a62cd414-8a0f-48a6-96e2-87f78cd2150e'::uuid, 'Andi', 'Budi', 'Partai Pohon Kelapa', 'Membangun Kota X yang lebih baik', 'https://cdn.antaranews.com/cache/1200x800/2017/04/20170419antarafoto-konpers-anies-sa.jpg', 'https://i.pinimg.com/736x/5f/3c/82/5f3c82943cfbaed310414c3ffafe4a81.jpg', '2024-12-10 13:33:31.431', '2024-12-10 13:33:31.431');
+INSERT INTO kandidats (kandidat_id, gubernur_name, wakil_gubernur_name, partai, visi, foto, foto_partai, created_at, updated_at) VALUES('fb6bfb51-c788-4dc9-b152-4644186ce054'::uuid, 'Cindy', 'Dinda', 'Partai Bulan Kelapa', 'Mengembangkan Kota X yang lebih baik', 'https://asset-2.tstatic.net/tribunnews/foto/images/preview/agus-harimurti-yudhoyono-dan-sylviana-murni_20160923_225229.jpg', 'https://i.pinimg.com/474x/37/7a/fe/377afe343560bdd899ad9c6cf2db9572.jpg', '2024-12-10 13:33:31.431', '2024-12-10 13:33:31.431');
+INSERT INTO kandidats (kandidat_id, gubernur_name, wakil_gubernur_name, partai, visi, foto, foto_partai, created_at, updated_at) VALUES('f3663dfb-95c6-4dae-8bb8-5a6ce0aa28d5'::uuid, 'Erling', 'Fawaz', 'Partai Layar Palapa', 'Memajukan Kota X yang lebih baik', 'https://cdn.antaranews.com/cache/1200x800/2024/08/28/1000187208_1.jpg', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9T7YvFQutWc2OeRzIKioSOxCK9ojL-xduPw&s', '2024-12-10 13:33:31.431', '2024-12-10 13:33:31.431');
 
 INSERT INTO time_open_vote (date) 
 VALUES ('2025-02-01');
+
+INSERT INTO ip_whitelist (id, ip_address, description, created_at, updated_at) VALUES(3, 'localhost:5000', 'Blockchain', '2025-01-17 21:10:44.269', '2025-01-17 21:10:44.269');
+INSERT INTO ip_whitelist (id, ip_address, description, created_at, updated_at) VALUES(2, 'localhost:5001', 'Blockchain2', '2024-12-19 15:29:13.290', '2024-12-19 15:29:13.290');
