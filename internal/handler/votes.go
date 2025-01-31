@@ -94,6 +94,11 @@ func (h *Votes) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 
 	fmt.Printf("Pemilih: %v\n", pemilih.HasVote)
 
+	if pemilih.HasVote {
+		http.Error(w, "Pemilih has voted", http.StatusConflict)
+		return
+	}
+
 	// Buat VoteRequest
 	requestBody, err := json.Marshal(voteReq)
 	if err != nil {
@@ -165,6 +170,8 @@ func (h *Votes) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 		responseData = "Vote success"
 	}
 
+	fmt.Printf("Response from blockchain server : %v\n", responseData)
+
 	// Set response menggunakan httpres.SetMarshal
 	httpres.SetMarshal(ctx, w, httpCode, responseData, "")
 }
@@ -228,7 +235,6 @@ func (h *Votes) ShowResult(w http.ResponseWriter, r *http.Request, _ httprouter.
 		http.Error(w, "Failed to send request to external server", http.StatusBadGateway)
 		return
 	}
-	defer resp.Body.Close()
 
 	// Baca respons dari server lain
 	var response map[string]interface{}
