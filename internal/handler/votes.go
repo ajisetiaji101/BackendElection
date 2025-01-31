@@ -125,7 +125,7 @@ func (h *Votes) Create(w http.ResponseWriter, r *http.Request, _ httprouter.Para
 	req.Header.Set("Content-Type", "application/json")
 
 	// Kirim request menggunakan http.Client
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{Timeout: 2 * time.Hour}
 	resp, err := client.Do(req)
 
 	if err != nil {
